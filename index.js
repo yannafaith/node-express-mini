@@ -15,31 +15,36 @@ server.get('/api/users', (req, res) => {
     })
 });
 
-// needs editing
 server.get('/api/users/:id', (req, res) => {
     const userId = req.params.id;
-    if (db.findById(userId) === false) {
-        console.log('error')
-        res.status(404).json({message: 'The user with the specified ID does not exist.'})
-    } else {
-    db.findById(userId)
-    .then(users => {
-        res.status(200).json({success: true, users})
+    db.findById()
+    .then(user => {
+        if (user) {
+            res.status(200).json(user)
+        }
+        else {
+            res.status(404).json({message: 'The user with the specified ID does not exist.' })
+        }
     })
     .catch(err => {
-        res.status(500).json({ message: 'The user information could not be retrieved.'})
+        res.status(500).json({ error: 'The user information could not be retrieved.'})
     })
-}});
+});
 
 // ================ delete endpoints
 
 server.delete('/api/users/:id', (req, res) => {
     const userId = req.params.id;
     db.remove(userId)
-    .then(res => {
-        res.status(200).json({success: true, res})
+    .then(deletion => {
+        if (!deletion) {
+            res.status(404).json({message: 'The user with the specified ID does not exist.'})
+        }
+        else {
+            res.status(204).end()
+        }
     })
-    .catch(err => {
+    .catch(() => {
         res.status(500).json({error: 'The user could not be removed.'})
     })
 });
@@ -49,14 +54,14 @@ server.delete('/api/users/:id', (req, res) => {
 server.post('/api/users/', (req, res) => {
     const user = req.body;
     if (!req.body.hasOwnProperty('name') || !req.body.hasOwnProperty('bio')) {
-        res.status(400).json({errorMessage: 'Please provide name and bio for user'})
+        res.status(400).json({errorMessage: 'Please provide name and bio for user.'})
     } else {
     db.insert(user)
     .then(() => {
         res.status(201).json(req.body)
     })
     .catch(() => {
-        res.status(500).json({success: false, error: 'There was an error while saving the user to the database'})
+        res.status(500).json({error: 'There was an error while saving the user to the database.'})
     })
 }});
 
@@ -65,15 +70,19 @@ server.put('/api/users/:id', (req, res) => {
     const user = req.body;
 
     db.update(id, user)
-    .then(updatedUser => {
-        if (!updatedUser) {
-            res.status(404).json({message: 'no user found.' })}
+    .then(userMatch => {
+        if (!userMatch) {
+            res.status(404).json({message: 'The user with the specified ID does not exist.' })
+        }
+        else if (!user.name || !user.bio) {
+            res.status(400).json({errorMessage: 'Please provide name and bio for the user.'})
+        }
         else {
-            res.status(500).json({success: true, user})
+            res.status(200).json({userMatch})
         }
     })
-    .catch(err => {
-        res.status(500).json({error: 'user info could not update'})
+    .catch(( )=> {
+        res.status(500).json({error: 'The user information could not be modified.'})
     })
 });
 
