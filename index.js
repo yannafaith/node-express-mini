@@ -43,15 +43,17 @@ server.delete('/api/users/:id', (req, res) => {
 
 server.post('/api/users/', (req, res) => {
     const user = req.body;
-    // if (req.body != )
+    if (!req.body.hasOwnProperty('name') || !req.body.hasOwnProperty('bio')) {
+        res.status(400).json({errorMessage: 'Please provide name and bio for user'})
+    } else {
     db.insert(user)
-    .then(user => {
+    .then(() => {
         res.status(201).json(req.body)
     })
     .catch(err => {
         res.status(err.code).json({success: false, message: err.message})
     })
-});
+}});
 
 
 
