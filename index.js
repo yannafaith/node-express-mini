@@ -17,7 +17,7 @@ server.get('/api/users', (req, res) => {
 
 server.get('/api/users/:id', (req, res) => {
     const userId = req.params.id;
-    db.findById()
+    db.findById(userId)
     .then(user => {
         if (user) {
             res.status(200).json(user)
